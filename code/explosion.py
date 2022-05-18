@@ -22,27 +22,32 @@ class Explosion(GameObject):
         if Explosion.explosion_effect:
             pass
         else:
-            # 建立爆炸效果圖片序列，這裡只用五張圖
+            # 建立爆炸效果圖片序列
             __parent__path = Path(__file__).parents[1]
-            icon_path = __parent__path / "res" / "explosion_small.png"
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_0.png"
             Explosion.explosion_effect.append(pygame.image.load(icon_path))
-            icon_path = __parent__path / "res" / "explosion_medium.png"
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_1.png"
             Explosion.explosion_effect.append(pygame.image.load(icon_path))
-            icon_path = __parent__path / "res" / "explosion_large.png"
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_2.png"
             Explosion.explosion_effect.append(pygame.image.load(icon_path))
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_3.png"
             Explosion.explosion_effect.append(pygame.image.load(icon_path))
-            icon_path = __parent__path / "res" / "explosion_medium.png"
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_4.png"
+            Explosion.explosion_effect.append(pygame.image.load(icon_path))
+            icon_path = __parent__path / "res" / "picture" / "bomb_enemy_5.png"
             Explosion.explosion_effect.append(pygame.image.load(icon_path))
 
         self.__image_index = 0
         self._image = Explosion.explosion_effect[self.__image_index]
-        self.__fps_count = 0
+        self._frame_rate = 90  # 設定爆炸圖片顯示的間隔時間
+        self._last_update = pygame.time.get_ticks()  # 獲取最近刷新時間
 
     def update(self):
-        self.__fps_count += 1
-        if self.__fps_count > 30:
-            self.__image_index += 1
-            if self.__image_index > 4:
+        now = pygame.time.get_ticks()  # 獲取當前時間
+        if now - self._last_update > self._frame_rate:  # 當與上一張圖的時間差達到frame_rate時，顯示下一張爆炸圖片
+            self._last_update = now  # 紀錄最近刷新時間
+            self.__image_index += 1  # 幀數+1，這樣下次才會調用下一張照片
+            if self.__image_index == 6:  # 當爆炸圖片達到最後一張時判定為失效
                 self._available = False
             else:
                 self._image = Explosion.explosion_effect[self.__image_index]

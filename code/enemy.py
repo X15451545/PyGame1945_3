@@ -29,8 +29,8 @@ class Enemy(GameObject):
         self._moveScaleY = math.cos(self._slop * math.pi / 2) * self._moveScale
 
         __parent_path = Path(__file__).parents[1]
-        self.__enemy_path = __parent_path / "res" / "enemy.png"
-        # self.__enemy_path = __parent_path / "res" / "picture" / "222.png"
+        # self.__enemy_path = __parent_path / "res" / "enemy.png"
+        self.__enemy_path = __parent_path / "res" / "picture" / "222.png"
         self._image = pygame.image.load(self.__enemy_path)
         self._center = self._x + self._image.get_rect().w / 2, self._y + self._image.get_rect().h / 2
         self._radius = 0.3 * math.hypot(self._image.get_rect().w, self._image.get_rect().h)
