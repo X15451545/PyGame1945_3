@@ -16,7 +16,7 @@ class GameObject:
         self._x = 0  # 貼圖位置
         self._y = 0
         self._moveScale = 1  # 移動量計算
-        self._hp = 1  # HP
+        self._hp = 50  # HP
         self._image = None
         self._available = True  # 有效物件
         self._center = None

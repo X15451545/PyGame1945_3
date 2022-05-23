@@ -13,7 +13,6 @@ class Player(GameObject):
         GameObject.__init__(self, playground)
         self._moveScale = 0.5 * sensitivity
         __parent_path = Path(__file__).parents[1]
-        # self.__player_path = __parent_path / "res" / "airforce.png"
         self.__player_path = __parent_path / "res" / "picture" / "111.png"
         self._image = pygame.image.load(self.__player_path)
         self._center = self._x + self._image.get_rect().w / 2, self._y + self._image.get_rect().h / 2

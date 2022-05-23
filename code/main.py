@@ -150,6 +150,11 @@ while running:
 
     screen.blit(background, (0, 0))         # 更新背景圖片
     player.collision_detect(Enemies)
+
+    if player.collided:
+        print("剩餘HP:", player.hp)
+        player.collided = False
+
     for m in Missiles:
         m.collision_detect(Enemies)
 
@@ -167,8 +172,16 @@ while running:
         e.update()
         screen.blit(e.image, e.xy)
 
-    player.update()                         # 更新player狀態
-    screen.blit(player.image, player.xy)    # 添加player圖片
+    if player.hp > 0:
+        player.update()                         # 更新player狀態
+        screen.blit(player.image, player.xy)    # 添加player圖片
+
+    if player.hp <= 0:
+        player.available = False
+        print("HP歸零")
+
+    # player.update()                         # 更新player狀態
+    # screen.blit(player.image, player.xy)    # 添加player圖片
 
     # 爆炸效果在player之上
     Boom = [item for item in Boom if item.available]
@@ -178,5 +191,8 @@ while running:
 
     pygame.display.update()                 # 更新螢幕狀態
     dt = clock.tick(fps)                    # 每秒更新fps次
+
+    if not player.available:
+        running = False
 
 pygame.quit()   # 關閉繪圖視窗
