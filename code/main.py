@@ -46,11 +46,11 @@ shoot_sound = sound_path / "shoot.wav"
 explosion_sound = sound_path / "explosion.wav"
 heroExplosion_sound = sound_path / "heroExplosion.wav"
 
-# background_image_path = image_path / "mapback.png"
-# image = pygame.image.load(background_image_path)
-# image.convert()
-# background.blit(pygame.transform.scale(image, (screenWidth, screenHigh)), (0, 0))
-# background.blit(image, (0, 0))
+background_image_path = image_path / "picture" / "333.jpg"
+image = pygame.image.load(background_image_path)
+image.convert()
+background.blit(pygame.transform.scale(image, (screenWidth, screenHigh)), (0, 0))
+background.blit(image, (0, 0))
 
 
 fps = 120                       # 更新頻率，包含畫面更新與事情更新
@@ -68,7 +68,9 @@ launchMissile = pygame.USEREVENT + 1
 createEnemy = pygame.USEREVENT + 2
 
 # 建立敵機，每秒一台
-pygame.time.set_timer(createEnemy, 1000)
+if player.available:
+    pygame.time.set_timer(createEnemy, 1000)
+# pygame.time.set_timer(createEnemy, 1000)
 
 running = True
 clock = pygame.time.Clock()     # create an object to help track time
@@ -76,6 +78,7 @@ clock = pygame.time.Clock()     # create an object to help track time
 pygame.mixer.music.load(BGM)
 pygame.mixer.music.set_volume(0.05)
 pygame.mixer.music.play(-1)
+pygame.time.delay(2000)  # 等待2秒讓mixer完成初始化
 
 # 設定無窮迴圈，讓視窗持續更新與執行
 while running:
@@ -224,6 +227,7 @@ while running:
     dt = clock.tick(fps)                    # 每秒更新fps次
 
     if not player.available:
+        pygame.mixer.music.stop()
         time.sleep(2)
         running = False
 
