@@ -2,6 +2,8 @@
 使用pygame撰寫一個簡單的射擊遊戲
 不使用pygame.Sprite，練習物件導向以及事件導向的撰寫
 """
+import time
+
 import pygame
 from pathlib import Path
 
@@ -19,6 +21,7 @@ icon_path = image_path / "airplaneIcon.png"
 
 # 初始化pygame系統
 pygame.init()
+pygame.mixer.init()
 # 建立視窗物件，寬、高
 screenHigh = 760
 screenWidth = 1000
@@ -32,6 +35,16 @@ pygame.display.set_icon(icon)
 background = pygame.Surface(screen.get_size())
 background = background.convert()       # 改變pixel format，加快顯示速度
 background.fill((50, 50, 50))           # 畫布為鐵黑色(三個參數為RGB)
+
+# 載入音效
+parent_path = Path(__file__).parents[1]
+image_path = parent_path / "res"
+sound_path = image_path / "sound"
+
+BGM = sound_path / "BGM.MID"
+shoot_sound = sound_path / "shoot.wav"
+explosion_sound = sound_path / "explosion.wav"
+heroExplosion_sound = sound_path / "heroExplosion.wav"
 
 # background_image_path = image_path / "mapback.png"
 # image = pygame.image.load(background_image_path)
@@ -59,6 +72,10 @@ pygame.time.set_timer(createEnemy, 1000)
 
 running = True
 clock = pygame.time.Clock()     # create an object to help track time
+
+pygame.mixer.music.load(BGM)
+pygame.mixer.music.set_volume(0.05)
+pygame.mixer.music.play(-1)
 
 # 設定無窮迴圈，讓視窗持續更新與執行
 while running:
@@ -108,6 +125,9 @@ while running:
                 player.to_the_top()
 
             if event.key == pygame.K_SPACE:
+                shoot = pygame.mixer.Sound(shoot_sound)
+                pygame.mixer.Sound.set_volume(shoot, 0.3)
+                shoot.play()
                 m_x = player.x + 20
                 m_y = player.y
                 Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
@@ -134,6 +154,9 @@ while running:
 
         # 自動發射飛彈
         if event.type == launchMissile:
+            shoot = pygame.mixer.Sound(shoot_sound)
+            pygame.mixer.Sound.set_volume(shoot, 0.3)
+            shoot.play()
             m_x = player.x + 20
             m_y = player.y
             Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
@@ -160,6 +183,14 @@ while running:
 
     for e in Enemies:
         if e.collided:
+            if player.hp > 0:
+                explosion = pygame.mixer.Sound(explosion_sound)
+                pygame.mixer.Sound.set_volume(explosion, 0.3)
+                explosion.play()
+            if player.hp <= 0:
+                heroExplosion = pygame.mixer.Sound(heroExplosion_sound)
+                pygame.mixer.Sound.set_volume(heroExplosion, 0.3)
+                heroExplosion.play()
             Boom.append(Explosion(e.center))
 
     Missiles = [item for item in Missiles if item.available]
@@ -193,6 +224,7 @@ while running:
     dt = clock.tick(fps)                    # 每秒更新fps次
 
     if not player.available:
+        time.sleep(2)
         running = False
 
 pygame.quit()   # 關閉繪圖視窗
