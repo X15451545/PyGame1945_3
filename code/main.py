@@ -2,7 +2,6 @@
 使用pygame撰寫一個簡單的射擊遊戲
 不使用pygame.Sprite，練習物件導向以及事件導向的撰寫
 """
-import time
 
 import pygame
 from pathlib import Path
@@ -13,11 +12,8 @@ from missile import MyMissile
 from explosion import Explosion
 
 parent_path = Path(__file__).parents[1]
-# print(parent_path)
 image_path = parent_path / "res"
-# print(image_path)
 icon_path = image_path / "airplaneIcon.png"
-# print(icon_path)
 
 # 初始化pygame系統
 pygame.init()
@@ -41,17 +37,47 @@ parent_path = Path(__file__).parents[1]
 image_path = parent_path / "res"
 sound_path = image_path / "sound"
 
-BGM = sound_path / "BGM.MID"
+bgm = sound_path / "backgroundmusic.MID"
+gameOver = sound_path / "gameover.mid"
 shoot_sound = sound_path / "shoot.wav"
 explosion_sound = sound_path / "explosion.wav"
 heroExplosion_sound = sound_path / "heroExplosion.wav"
 
+# 載入地圖
 background_image_path = image_path / "picture" / "333.jpg"
-image = pygame.image.load(background_image_path)
-image.convert()
-background.blit(pygame.transform.scale(image, (screenWidth, screenHigh)), (0, 0))
-background.blit(image, (0, 0))
+background_img = pygame.image.load(background_image_path)
+background_img.convert()
+background.blit(pygame.transform.scale(background_img, (screenWidth, screenHigh)), (0, 0))
 
+# 載入字體，微軟正黑體
+font_name = image_path / "font.ttf"
+
+
+# 將文字寫入畫面中
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(text, True, (255, 255, 255))
+    text_rect = text_surface.get_rect()
+    text_rect.centerx = x
+    text_rect.y = y
+    surf.blit(text_surface, text_rect)
+
+
+# 將血條寫入畫面中
+def draw_hp(surf, hp, x, y):
+    if hp < 0:
+        hp = 0
+    bar_length = 200
+    bar_height = 30
+    fill = (hp / 50) * bar_length
+    outline_rect = pygame.Rect(x, y, bar_length, bar_height)
+    fill_rect = pygame.Rect(x, y, fill, bar_height)
+    pygame.draw.rect(surf, (255, 0, 0), fill_rect)
+    pygame.draw.rect(surf, (255, 255, 255), outline_rect, 2)
+
+
+# 載入得分
+score = 0
 
 fps = 120                       # 更新頻率，包含畫面更新與事情更新
 movingScale = 600 / fps
@@ -70,18 +96,95 @@ createEnemy = pygame.USEREVENT + 2
 # 建立敵機，每秒一台
 if player.available:
     pygame.time.set_timer(createEnemy, 1000)
-# pygame.time.set_timer(createEnemy, 1000)
 
+initial = True
+game_over = False
 running = True
 clock = pygame.time.Clock()     # create an object to help track time
 
-pygame.mixer.music.load(BGM)
-pygame.mixer.music.set_volume(0.05)
-pygame.mixer.music.play(-1)
-pygame.time.delay(2000)  # 等待2秒讓mixer完成初始化
 
 # 設定無窮迴圈，讓視窗持續更新與執行
 while running:
+
+    # 初始畫面
+    if initial:
+        pygame.mixer.music.load(bgm)
+        pygame.mixer.music.set_volume(0.05)
+        pygame.mixer.music.play(-1)
+        pygame.time.delay(100)
+
+        screen.blit(background, (0, 0))
+        draw_text(screen, "1945偽", 80, screenWidth/2, screenHigh/4)
+        draw_text(screen, "W,S：上下移動", 30, screenWidth/2, screenHigh/2)
+        draw_text(screen, "A,D：左右移動", 30, screenWidth/2, screenHigh/2 + 40)
+        draw_text(screen, "空白鍵：發射子彈", 30, screenWidth/2, screenHigh/2 + 80)
+        draw_text(screen, "按下任意鍵開始遊戲", 24, screenWidth/2, screenHigh*3/4 + 20)
+
+        pygame.display.update()
+
+        # 載入得分
+        score = 0
+
+        waiting = True
+        while waiting:
+            dt = clock.tick(fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    waiting = False
+                    running = False
+                elif event.type == pygame.KEYUP:
+                    initial = False
+                    waiting = False
+                    print("遊戲開始!")
+
+    # 結束畫面
+    if game_over:
+
+        pygame.mixer.music.load(gameOver)
+        pygame.mixer.music.set_volume(0.05)
+        pygame.mixer.music.play(-1)
+        pygame.time.delay(100)
+
+        game_over_image_path = image_path / "picture" / "gameover.PNG"
+        game_over_img = pygame.image.load(game_over_image_path)
+        game_over_img.convert()
+
+        game_over_background = pygame.Surface(screen.get_size())
+        game_over_background = game_over_background.convert()       # 改變pixel format，加快顯示速度
+        game_over_background.fill((50, 50, 50))           # 畫布為鐵黑色(三個參數為RGB)
+
+        game_over_background.blit(pygame.transform.scale(game_over_img, (screenWidth, screenHigh)), (0, 0))
+
+        screen.blit(game_over_background, (0, 0))
+        pygame.display.update()
+
+        # pygame.time.delay(3000)
+        draw_text(screen, "Score: %d" % score, 30, screenWidth/2, screenHigh/2 + 100)
+        draw_text(screen, "按下任意鍵重新開始", 24, screenWidth/2, screenHigh*3/4 + 20)
+        pygame.display.update()
+
+        waiting = True
+        Quit = False
+        while waiting:
+            dt = clock.tick(fps)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    waiting = False
+                    Quit = True
+                elif event.type == pygame.KEYUP:
+                    pygame.mixer.music.stop()
+                    initial = True
+                    game_over = False
+                    waiting = False
+
+                    player = Player(playground=playground, sensitivity=movingScale)
+                    player.hp = 50
+                    Missiles = []
+                    Enemies = []
+                    Boom = []
+        if Quit:
+            break
+        
     # 從pygame事件佇列中，一項一項的檢查
 
     # 玩家移動方法一
@@ -178,8 +281,11 @@ while running:
     player.collision_detect(Enemies)
 
     if player.collided:
+        if player.hp < 0:
+            player.hp = 0
         print("剩餘HP:", player.hp)
         player.collided = False
+        score -= 50
 
     for m in Missiles:
         m.collision_detect(Enemies)
@@ -195,6 +301,7 @@ while running:
                 pygame.mixer.Sound.set_volume(heroExplosion, 0.3)
                 heroExplosion.play()
             Boom.append(Explosion(e.center))
+            score += 100
 
     Missiles = [item for item in Missiles if item.available]
     for m in Missiles:
@@ -212,10 +319,6 @@ while running:
 
     if player.hp <= 0:
         player.available = False
-        print("HP歸零")
-
-    # player.update()                         # 更新player狀態
-    # screen.blit(player.image, player.xy)    # 添加player圖片
 
     # 爆炸效果在player之上
     Boom = [item for item in Boom if item.available]
@@ -223,12 +326,16 @@ while running:
         e.update()
         screen.blit(e.image, e.xy)
 
-    pygame.display.update()                 # 更新螢幕狀態
-    dt = clock.tick(fps)                    # 每秒更新fps次
+    if running and not initial:
+        draw_text(screen, str(score), 32, screenWidth/2, 10)
+        draw_hp(screen, player.hp, screenWidth - 210, screenHigh - 40)
+        pygame.display.update()                 # 更新螢幕狀態
+        dt = clock.tick(fps)                    # 每秒更新fps次
 
-    if not player.available:
+    if not player.available and not Boom:
         pygame.mixer.music.stop()
-        time.sleep(2)
-        running = False
+        print("HP歸零")
+        pygame.time.delay(1000)
+        game_over = True
 
 pygame.quit()   # 關閉繪圖視窗
