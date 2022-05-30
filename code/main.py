@@ -25,7 +25,7 @@ playground = (screenWidth, screenHigh)
 screen = pygame.display.set_mode((screenWidth, screenHigh))
 
 # Title, Icon and Background
-pygame.display.set_caption("1942偽")
+pygame.display.set_caption("Pygame射擊遊戲")
 icon = pygame.image.load(icon_path)     # 載入圖示
 pygame.display.set_icon(icon)
 background = pygame.Surface(screen.get_size())
@@ -41,10 +41,10 @@ bgm = sound_path / "backgroundmusic.MID"
 gameOver = sound_path / "gameover.mid"
 shoot_sound = sound_path / "shoot.wav"
 explosion_sound = sound_path / "explosion.wav"
-heroExplosion_sound = sound_path / "heroExplosion.wav"
+playerExplosion_sound = sound_path / "playerExplosion.wav"
 
 # 載入地圖
-background_image_path = image_path / "picture" / "333.jpg"
+background_image_path = image_path / "picture" / "background.jpg"
 background_img = pygame.image.load(background_image_path)
 background_img.convert()
 background.blit(pygame.transform.scale(background_img, (screenWidth, screenHigh)), (0, 0))
@@ -55,11 +55,11 @@ font_name = image_path / "font.ttf"
 
 # 將文字寫入畫面中
 def draw_text(surf, text, size, x, y):
-    font = pygame.font.Font(font_name, size)
-    text_surface = font.render(text, True, (255, 255, 255))
-    text_rect = text_surface.get_rect()
-    text_rect.centerx = x
-    text_rect.y = y
+    font = pygame.font.Font(font_name, size)    # 設定字體及大小
+    text_surface = font.render(text, True, (255, 255, 255))     # 繪製
+    text_rect = text_surface.get_rect() # 取得矩形
+    text_rect.centerx = x   # 取得矩形x
+    text_rect.y = y     # 取得矩形y
     surf.blit(text_surface, text_rect)
 
 
@@ -67,13 +67,13 @@ def draw_text(surf, text, size, x, y):
 def draw_hp(surf, hp, x, y):
     if hp < 0:
         hp = 0
-    bar_length = 200
-    bar_height = 30
-    fill = (hp / 50) * bar_length
+    bar_length = 200    # 矩形長度
+    bar_height = 30     # 矩形寬度
+    fill = (hp / 50) * bar_length   # 血量百分比
     outline_rect = pygame.Rect(x, y, bar_length, bar_height)
     fill_rect = pygame.Rect(x, y, fill, bar_height)
-    pygame.draw.rect(surf, (255, 0, 0), fill_rect)
-    pygame.draw.rect(surf, (255, 255, 255), outline_rect, 2)
+    pygame.draw.rect(surf, (255, 0, 0), fill_rect)  # 紅色血條
+    pygame.draw.rect(surf, (255, 255, 255), outline_rect, 2)    # 白色外框
 
 
 # 載入得分
@@ -100,6 +100,10 @@ if player.available:
 initial = True
 game_over = False
 running = True
+
+space_first = 0
+space_second = -400
+
 clock = pygame.time.Clock()     # create an object to help track time
 
 
@@ -114,7 +118,7 @@ while running:
         pygame.time.delay(100)
 
         screen.blit(background, (0, 0))
-        draw_text(screen, "1945偽", 80, screenWidth/2, screenHigh/4)
+        draw_text(screen, "Pygame射擊遊戲", 80, screenWidth/2, screenHigh/4)
         draw_text(screen, "W,S：上下移動", 30, screenWidth/2, screenHigh/2)
         draw_text(screen, "A,D：左右移動", 30, screenWidth/2, screenHigh/2 + 40)
         draw_text(screen, "空白鍵：發射子彈", 30, screenWidth/2, screenHigh/2 + 80)
@@ -151,7 +155,7 @@ while running:
 
         game_over_background = pygame.Surface(screen.get_size())
         game_over_background = game_over_background.convert()       # 改變pixel format，加快顯示速度
-        game_over_background.fill((50, 50, 50))           # 畫布為鐵黑色(三個參數為RGB)
+        game_over_background.fill((50, 50, 50))                     # 畫布為鐵黑色(三個參數為RGB)
 
         game_over_background.blit(pygame.transform.scale(game_over_img, (screenWidth, screenHigh)), (0, 0))
 
@@ -231,15 +235,30 @@ while running:
                 player.to_the_top()
 
             if event.key == pygame.K_SPACE:
-                shoot = pygame.mixer.Sound(shoot_sound)
-                pygame.mixer.Sound.set_volume(shoot, 0.3)
-                shoot.play()
-                m_x = player.x + 20
-                m_y = player.y
-                Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
-                m_x = player.x + 80
-                Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))  # 若未指定參數，需按照宣告順序
-                pygame.time.set_timer(launchMissile, 400)  # 之後，每400 ms發射一組
+                space_first = pygame.time.get_ticks()  # 獲取當前時間
+
+                if space_first - space_second >= 400:
+                    space_second = space_first
+                    shoot = pygame.mixer.Sound(shoot_sound)
+                    pygame.mixer.Sound.set_volume(shoot, 0.3)
+                    shoot.play()
+
+                    m_x = player.x + 20
+                    m_y = player.y
+                    Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
+                    m_x = player.x + 80
+                    Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))  # 若未指定參數，需按照宣告順序
+                    pygame.time.set_timer(launchMissile, 400)  # 之後，每400 ms發射一組
+
+                # shoot = pygame.mixer.Sound(shoot_sound)
+                # pygame.mixer.Sound.set_volume(shoot, 0.3)
+                # shoot.play()
+                # m_x = player.x + 20
+                # m_y = player.y
+                # Missiles.append(MyMissile(xy=(m_x, m_y), playground=playground, sensitivity=movingScale))
+                # m_x = player.x + 80
+                # Missiles.append(MyMissile(playground, (m_x, m_y), movingScale))  # 若未指定參數，需按照宣告順序
+                # pygame.time.set_timer(launchMissile, 400)  # 之後，每400 ms發射一組
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
@@ -297,9 +316,9 @@ while running:
                 pygame.mixer.Sound.set_volume(explosion, 0.3)
                 explosion.play()
             if player.hp <= 0:
-                heroExplosion = pygame.mixer.Sound(heroExplosion_sound)
-                pygame.mixer.Sound.set_volume(heroExplosion, 0.3)
-                heroExplosion.play()
+                playerExplosion = pygame.mixer.Sound(playerExplosion_sound)
+                pygame.mixer.Sound.set_volume(playerExplosion, 0.3)
+                playerExplosion.play()
             Boom.append(Explosion(e.center))
             score += 100
 
